@@ -2,7 +2,7 @@
 import os
 
 class Stats(object):
-    """Class holding info about atats in Ava raids."""
+    """Class holding info about stats in Ava raids."""
 
     roles = {
         "Newby": 0,
@@ -29,24 +29,24 @@ class Stats(object):
 
     def add_role(self, role, value):
         if role in self.roles.keys():
-            return false
+            return False
         else:
             self.roles[role] = value
-            return true
+            return True
 
     def remove_role(self, role):
         if role not in self.roles.keys():
-            return false
+            return False
         else:
             self.roles.pop(role)
-            return true
+            return True
 
     def change_role_limit(self, role, value):
         if role not in self.roles.keys():
-            return false
+            return False
         else:
             self.roles[role] = value
-            return true
+            return True
 
     def get_player(self, name):
         if name not in self.players.keys():
