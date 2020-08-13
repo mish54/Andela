@@ -1,8 +1,8 @@
 # parser.py
 import os
 import discord
-import core.stats
-import core.scaner
+from core.stats import Stats
+from core.scaner import Scanner
 
 class Parser(object):
     """Class for Parser, that will parse and interpret commands."""
@@ -11,10 +11,19 @@ class Parser(object):
     scaner = Scanner()
     message = None
     token = None
+    admin_role_id = None
+    moderator_role_id = None
+    yoda_role_id = None
+    leader_role_id = None
+    leader_training_role_id = None
 
     def __init__(self, guild):
         self.guild = guild
-        pass
+        admin_role_id = get(guild.roles, id = 701102476308250794)
+        moderator_role_id = get(guild.roles, id = 701102288332259349)
+        yoda_role_id = get(guild.roles, id = 703217394432213062)
+        leader_role_id = get(guild.roles, id = 701092446838325288)
+        leader_training_role_id = get(guild.roles, id = 701101729751629837)
 
     def parse(self, message):
         scaner.new_message(message.content)
@@ -124,8 +133,26 @@ class Parser(object):
             return "I cannot read your command. Please, use prepared syntax for commands."
 
         if self.token[1] is "xp":
+            if not (
+                admin_role_id in message.author.roles or
+                moderator_role_id in message.author.roles or
+                yoda_role_id in message.author.roles or
+                leader_role_id in message.author.roles or
+                leader_training_role_id in message.author.roles
+                ):
+                return "You have no permition to call that command."
+
             return add_xp(pozitive)
+
         if self.token[1] is "role":
+            if not (
+                admin_role_id in message.author.roles or
+                moderator_role_id in message.author.roles or
+                yoda_role_id in message.author.roles
+                ):
+                return "You have no permition to call that command."
+
+            if message.author.roles: #TODO
             return add_role(pozitive)
         else:
             return "I cannot read your command. Please, use prepared syntax for commands."

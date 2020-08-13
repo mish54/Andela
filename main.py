@@ -2,7 +2,7 @@
 import os
 import discord
 from dotenv import load_dotenv
-import core.parser
+from core.parser import Parser
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
