@@ -1,8 +1,6 @@
 # parser.py
 import os
 import discord
-from core.stats import Stats
-from core.scaner import Scanner
 
 class Parser(object):
     """Class for Parser, that will parse and interpret commands."""
@@ -84,7 +82,7 @@ class Parser(object):
         elif self.token[1] is "top":
             return toplist()
 
-    def toplist(self): #TODO
+    def toplist(self):
         self.token = scaner.get_token()
         if self.token is None or self.token[0] is not "number":
             return "I cannot read your command. Please, use prepared syntax for commands. Expected a number after 'top'."
@@ -152,8 +150,8 @@ class Parser(object):
                 ):
                 return "You have no permition to call that command."
 
-            if message.author.roles: #TODO
             return add_role(pozitive)
+
         else:
             return "I cannot read your command. Please, use prepared syntax for commands."
 
