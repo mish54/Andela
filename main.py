@@ -2,8 +2,7 @@
 import os
 import discord
 from dotenv import load_dotenv
-from core.stats import Stats
-from core.scaner import Scanner
+
 from core.parser import Parser
 
 load_dotenv()

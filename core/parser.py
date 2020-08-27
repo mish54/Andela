@@ -1,6 +1,8 @@
 # parser.py
 import os
 import discord
+from .stats import Stats
+from .scaner import Scanner
 
 class Parser(object):
     """Class for Parser, that will parse and interpret commands."""
