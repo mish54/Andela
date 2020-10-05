@@ -11,66 +11,71 @@ class Parser(object):
     scaner = Scanner()
     message = None
     token = None
-    admin_role_id = None
-    moderator_role_id = None
-    yoda_role_id = None
-    leader_role_id = None
-    leader_training_role_id = None
+    admin_roles = []
+    leader_roles = []
 
     def __init__(self, guild):
         self.guild = guild
-        admin_role_id = get(guild.roles, id = 701102476308250794)
-        moderator_role_id = get(guild.roles, id = 701102288332259349)
-        yoda_role_id = get(guild.roles, id = 703217394432213062)
-        leader_role_id = get(guild.roles, id = 701092446838325288)
-        leader_training_role_id = get(guild.roles, id = 701101729751629837)
+
+        for role in self.guild.roles:
+            if "admin" in role.name or "Admin" in role.name:
+                self.admin_roles.append(role)
+            if "moderator" in role.name or "Moderator" in role.name:
+                self.admin_roles.append(role)
+            if "leader" in role.name or "Leader" in role.name:
+                self.leader_roles.append(role)
 
     def parse(self, message):
-        scaner.new_message(message.content)
+        self.scaner.new_message(message.content)
+        print("MESSAGE:" + message.content)
         self.message = message
 
-        self.token = scaner.get_token()
+        self.token = self.scaner.get_token()
         if self.token is None:
+            print("Begins with None.")
             return None
-        if not (self.token[0] is "keyword" and self.token[1] is "Andelka"):
+        if not (self.token[0] == self.scaner.types["keyword"] and self.token[1] == "Andelka"):
+            print("Begins with nothing for me.")
+            print("|" + str(self.token[0]) + "," + self.token[1] + "|")
             return None
 
-        self.token = scaner.get_token()
+        print("Begins with Andelka.")
+        self.token = self.scaner.get_token()
         if self.token is None:
             return "Hello, what do you need? Please, use prepared syntax for commands."
-        if self.token[0] is not "keyword": # syntax error
+        if self.token[0] != self.scaner.types["keyword"]: # syntax error
             return "I cannot read your command. Please, use prepared syntax for commands."
 
-        if self.token[1] is "show":
+        if self.token[1] == "show":
             return self.show_command()
 
-        if self.token[1] is "add":
+        if self.token[1] == "add":
             return self.add_command(pozitive=True)
 
-        if self.token[1] is "remove":
+        if self.token[1] == "remove":
             return self.add_command(pozitive=False)
 
         else: # syntax error
             return "I cannot read your command. Please, use prepared syntax for commands."
 
     def show_command(self):
-        self.token = scaner.get_token()
+        self.token = self.scaner.get_token()
         if self.token is None:
             return "Hello, what do you need to show? Please, use prepared syntax for commands."
-        if self.token[0] is not "keyword": # syntax error
+        if self.token[0] != self.scaner.types["keyword"]: # syntax error
             return "I cannot read your command. Please, use prepared syntax for commands."
 
-        if self.token[1] is "current":
-            self.token = scaner.get_token()
-            if self.token is None or self.token[0] is not "keyword":
+        if self.token[1] == "current":
+            self.token = self.scaner.get_token()
+            if self.token is None or self.token[0] != self.scaner.types["keyword"]:
                 return "I cannot read your command. Please, use prepared syntax for commands."
 
-            if self.token[1] is "xp":
-                self.token = scaner.get_token()
-                if self.token is None or self.token[0] is not "other":
+            if self.token[1] == "xp":
+                self.token = self.scaner.get_token()
+                if self.token is None or self.token[0] != self.scaner.types["other"]:
                     return "I cannot read your command. Please, use prepared syntax for commands."
 
-                player_stat = stat.get_player(self.token[1])
+                player_stat = self.stat.get_player(self.token[1])
                 if player_stat is None:
                     return "Unknown player. Be avare to use point in float numbers like '0.5', not '0,5'."
 
@@ -81,13 +86,18 @@ class Parser(object):
             else:
                 return "I cannot read your command. Please, use prepared syntax for commands."
 
-        elif self.token[1] is "top":
-            return toplist()
+        elif self.token[1] == "top":
+            return self.toplist()
 
     def toplist(self):
-        self.token = scaner.get_token()
-        if self.token is None or self.token[0] is not "number":
-            return "I cannot read your command. Please, use prepared syntax for commands. Expected a number after 'top'."
+        self.token = self.scaner.get_token()
+        if self.token is None:
+            return "I cannot read your command. Please, use prepared syntax for commands. Expected a number after 'top'.1"
+        elif self.token[0] != self.scaner.types["number"]:
+            print(self.token)
+            print("Ma byt:")
+            print(self.scaner.types["number"])
+            return "I cannot read your command. Please, use prepared syntax for commands. Expected a number after 'top'.2"
 
         count = None
         try:
@@ -95,21 +105,21 @@ class Parser(object):
         except:
             return "Expected integer. Please, use prepared syntax for commands."
 
-        self.token = scaner.get_token()
-        if self.token is None or self.token[1] is not "xp":
+        self.token = self.scaner.get_token()
+        if self.token is None or self.token[1] != "xp":
             return "I expected 'xp'. Please, use prepared syntax for commands."
 
-        sorted = self.stats.toplist()
+        sorted = self.stat.toplist()
 
         # solving a problem with role filter
-        self.token = scaner.get_token()
-        if self.token is not None and self.token[0] is "other":
-            role = get(guild.roles, name = self.token[1])
+        self.token = self.scaner.get_token()
+        if self.token is not None and self.token[0] == self.scaner.types["other"]:
+            role = discord.utils.get(self.guild.roles, name = self.token[1])
             if role is None:
                 return "Unknown role."
 
             filter_list = []
-            for player in guild.members:
+            for player in self.guild.members:
                 if role in player.roles:
                     filter_list.append(player.id)
             sorted = [i for i in sorted if i[0] in filter_list]
@@ -118,7 +128,7 @@ class Parser(object):
             sorted = sorted[0:count]
         output = "Toplist:\n"
         for i in sorted:
-            player = get(guild.members, id = i[0])
+            player = discord.utils.get(self.guild.members, id = i[0])
             if player is not None:
                 output += player.name + " -> " + i[1] + "\n"
             else:
@@ -126,64 +136,54 @@ class Parser(object):
         return output
 
     def add_command(self, pozitive=True):
-        self.token = scaner.get_token()
+        self.token = self.scaner.get_token()
         if self.token is None:
             return "Hello, what do you need to add or remove? Please, use prepared syntax for commands."
-        if self.token[0] is not "keyword": # syntax error
+        if self.token[0] != self.scaner.types["keyword"]: # syntax error
             return "I cannot read your command. Please, use prepared syntax for commands."
 
-        if self.token[1] is "xp":
-            if not (
-                admin_role_id in message.author.roles or
-                moderator_role_id in message.author.roles or
-                yoda_role_id in message.author.roles or
-                leader_role_id in message.author.roles or
-                leader_training_role_id in message.author.roles
-                ):
+        intersection_1 = [item for item in self.message.author.roles if item in self.admin_roles]
+        intersection_2 = [item for item in self.message.author.roles if item in self.leader_roles]
+
+        if self.token[1] == "xp":
+            if ( len(intersection_1)==0 and len(intersection_2)==0 ):
                 return "You have no permition to call that command."
+            return self.add_xp(pozitive)
 
-            return add_xp(pozitive)
-
-        if self.token[1] is "role":
-            if not (
-                admin_role_id in message.author.roles or
-                moderator_role_id in message.author.roles or
-                yoda_role_id in message.author.roles
-                ):
+        if self.token[1] == "role":
+            if ( len(intersection_1)==0 ):
                 return "You have no permition to call that command."
-
-            return add_role(pozitive)
+            return self.add_role(pozitive)
 
         else:
             return "I cannot read your command. Please, use prepared syntax for commands."
 
     def add_xp(self, pozitive=True):
-        self.token = scaner.get_token()
-        if self.token is None or self.token[0] is not "number":
+        self.token = self.scaner.get_token()
+        if self.token is None or self.token[0] != self.scaner.types["number"]:
             return "I cannot read your command. Please, use prepared syntax for commands. Expected a number after 'xp'."
         value = float(self.token[1])
         if pozitive is False:
             value = -value
 
-        self.token = scaner.get_token()
-        if self.token is None or self.token[0] is not "other":
+        self.token = self.scaner.get_token()
+        if self.token is None or self.token[0] != self.scaner.types["other"]:
             return "I cannot read your command. Please, use prepared syntax for commands. Expected a name of player, role or voice room."
 
         output = ""
-        if self.token[1][0] == "@":
-            # player or role
-            role = get(guild.roles, name = self.token[1][1:])
-            if role is None:
-                # player
-                output = self.add_xp_to_player(self.token[1], value)
-            else:
-                # xp for role
-                for player in guild.members:
-                    if role in player.roles:
-                        output += self.add_xp_to_player(player.id, value) + "\n"
+        # player
+        if self.token[1].startswith("<@!"):
+            output = self.add_xp_to_player(self.token[1][3:-1], value)
+        elif self.token[1].startswith("<@&"):
+            role = discord.utils.get(self.guild.roles, name = self.token[1][3:-1])
+            for player in self.guild.members:
+                if role in player.roles:
+                    output += self.add_xp_to_player(player.id, value) + "\n"
+        elif self.token[1].startswith("@"):
+            output = "Unknown voice player or role."
         else:
             # voice room
-            voice_channel = get(guild.voice_channels, name = self.token[1])
+            voice_channel = discord.utils.get(self.guild.voice_channels, name = self.token[1])
             if voice_channel is None:
                 output = "Unknown voice room."
             else:
@@ -194,14 +194,14 @@ class Parser(object):
 
     def add_xp_to_player(self, player_id, value):
         output = self.stat.add_xp_to_player(player_id, value)
-        control_roles_to_player(player_id)
+        self.control_roles_to_player(player_id)
         return output
 
     def control_roles_to_player(self, player_id, seasonal_reset=False):
-        player_stat = self.stat.get_player()
+        player_stat = self.stat.get_player(player_id)
         if player_stat is None:
             return
-        player = get(guild.members, id = player_id)
+        player = discord.utils.get(self.guild.members, id = player_id)
         if player is None:
             return
 
@@ -209,47 +209,50 @@ class Parser(object):
         roles_to_give = []
         roles_to_remove = []
         for role in roles:
+            print("Role:")
+            print(role)
+            print(role[1])
             if player_stat[0] >= role[1]:
-                roles_to_give.append( get(guild.roles, name = role) )
+                roles_to_give.append( discord.utils.get(self.guild.roles, name = role) )
             else:
                 if role[0] is not "Middle Class Raider":
-                    roles_to_remove.append( get(guild.roles, name = role) )
+                    roles_to_remove.append( discord.utils.get(self.guild.roles, name = role) )
 
         player.remove_roles(roles_to_remove, "Andelka role management")
         player.add_roles(roles_to_remove, "Andelka role management")
 
     def add_role(self, pozitive=True):
         if positive:
-            self.token = scaner.get_token()
-            if self.token is None or self.token[0] is not "number":
+            self.token = self.scaner.get_token()
+            if self.token is None or self.token[0] != self.scaner.types["number"]:
                 return "I cannot read your command. Please, use prepared syntax for commands. Expected a number."
             value = int(self.token[1])
 
-            self.token = scaner.get_token()
-            if self.token is None or self.token[0] is not "other":
+            self.token = self.scaner.get_token()
+            if self.token is None or self.token[0] != self.scaner.types["other"]:
                 return "I cannot read your command. Please, use prepared syntax for commands. Expected a name of a role."
 
             result = self.stat.add_role(self.token[1], value)
             if result == False:
                 return "Cannot add role " + self.token[1] + ". This role is already on a list."
 
-            for player in guild.members:
-                control_roles_to_player(player.id)
+            for player in self.guild.members:
+                self.control_roles_to_player(player.id)
 
             return "New role was added."
         else:
-            self.token = scaner.get_token()
-            if self.token is None or self.token[0] is not "other":
+            self.token = self.scaner.get_token()
+            if self.token is None or self.token[0] != self.scaner.types["other"]:
                 return "I cannot read your command. Please, use prepared syntax for commands. Expected a name of a role."
 
-            role = get(guild.roles, name = self.token[1])
+            role = discord.utils.get(self.guild.roles, name = self.token[1])
             if role is None:
                 return "Unknown role."
 
             current_max_xp = self.stat.toplist()[0][1]
             self.stat.change_role_limit(self, role.name, current_max_xp + 100)
-            for player in guild.members:
-                control_roles_to_player(self, player.id)
+            for player in self.guild.members:
+                self.control_roles_to_player(self, player.id)
 
             result = self.stat.remove_role(self.token[1])
             if result == False:

@@ -66,4 +66,4 @@ class Stats(object):
             return -1
 
     def toplist(self):
-        return sorted(stat.players.items(), key=lambda x: x[1], reverse=True)
+        return sorted(self.players.items(), key=lambda x: x[1], reverse=True)

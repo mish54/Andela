@@ -24,12 +24,12 @@ class Scanner(object):
         index = self.index
         while index < len(self.message):
             # delete more spaces than it should be
-            if submessage == "" and self.message[index] == " ":
+            if submessage == "" and self.message[index].isspace():
                 index += 1
                 continue
 
             # space - separator?
-            if self.message[index] == " ":
+            if self.message[index].isspace():
                 # numbers
                 if type == self.types["number"]:
                     self.index = index + 1
@@ -58,6 +58,9 @@ class Scanner(object):
 
         self.index = len(self.message)
         # end of message
+        if type == self.types["number"]:
+            return [self.types["number"], submessage]
+
         if submessage in self.keywords:
             return [self.types["keyword"], submessage]
 
